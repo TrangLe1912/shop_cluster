@@ -45,7 +45,7 @@ pm.execute_notebook(
         RULES_OUTPUT_PATH="data/processed/rules_apriori_filtered.csv",
 
         # Tham số Apriori
-        MIN_SUPPORT=0.01,
+        MIN_SUPPORT=0.02,
         MAX_LEN=3,
 
         # Generate rules
@@ -81,7 +81,7 @@ pm.execute_notebook(
         BASKET_BOOL_PATH="data/processed/basket_bool.parquet",
         RULES_OUTPUT_PATH="data/processed/rules_fpgrowth_filtered.csv",
 
-        MIN_SUPPORT=0.01,
+        MIN_SUPPORT=0.02,
         MAX_LEN=3,
 
         METRIC="lift",
@@ -111,7 +111,7 @@ pm.execute_notebook(
     parameters=dict(
         BASKET_BOOL_PATH="data/processed/basket_bool.parquet",
 
-        MIN_SUPPORT=0.01,
+        MIN_SUPPORT=0.02,
         MAX_LEN=3,
 
         METRIC="lift",
@@ -131,11 +131,11 @@ pm.execute_notebook(
 
         TOP_K_RULES=200,
         SORT_RULES_BY="lift",
-        WEIGHTING="lift",
-        MIN_ANTECEDENT_LEN=1,
+        WEIGHTING="lift_x_conf",
+        MIN_ANTECEDENT_LEN=2,
         USE_RFM=True,
         RFM_SCALE=True,
-        RULE_SCALE=False,
+        RULE_SCALE=True,
 
         K_MIN=2,
         K_MAX=10,
