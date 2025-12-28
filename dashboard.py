@@ -619,47 +619,87 @@ elif page == "📦 Gợi Ý Bundle":
     profile = CLUSTER_PROFILES[cluster_filter]
     
     st.markdown(f'<p class="section-header">{profile["icon"]} Gợi Ý Bundle - Cụm {cluster_filter}</p>', unsafe_allow_html=True)
-    st.caption(f"**{profile['name']}** - Bundle sản phẩm được tối ưu hóa")
+    st.caption(f"**{profile['name']}** - Bundle sản phẩm dựa trên quy tắc kết hợp thực tế")
     
-    # Bundle suggestions based on cluster
-    bundles = {
-        0: [
-            ("Premium Essentials Pack", "£50-80", ["Home Décor", "Gifts", "Lighting"], "⭐⭐⭐⭐⭐"),
-            ("Seasonal Luxury Collection", "£100-150", ["Furniture", "Gifts", "Decorative"], "⭐⭐⭐⭐⭐"),
-            ("Complete Home Solution", "£120-200", ["Home Décor", "Furnishings", "Kitchen"], "⭐⭐⭐⭐⭐"),
-        ],
-        1: [
-            ("Seasonal Best-Sellers", "£60-100", ["Gifts", "Lighting", "Decorative"], "⭐⭐⭐⭐"),
-            ("Premium Gift Sets", "£80-130", ["Gifts", "Furnishings", "Kitchen"], "⭐⭐⭐⭐"),
-            ("Occasion Collection", "£90-150", ["Home Décor", "Gifts", "Lighting"], "⭐⭐⭐⭐"),
-        ],
-        2: [
-            ("Starter Home Kit", "£20-40", ["Home Décor", "Gifts"], "⭐⭐⭐"),
-            ("Trendy Beginner Pack", "£25-50", ["Gifts", "Decorative"], "⭐⭐⭐"),
-            ("Budget Exploration Set", "£15-35", ["Home Décor", "Kitchen"], "⭐⭐⭐"),
-        ],
-        3: [
-            ("Budget Bundle", "£15-25", ["Home Décor", "Kitchen"], "⭐⭐"),
-            ("Clearance Mix Pack", "£20-35", ["Gifts", "Decorative"], "⭐⭐"),
-            ("Bulk Buy Savings", "£25-40", ["Home Décor", "Furnishings"], "⭐⭐"),
-        ]
-    }
-    
-    for idx, (name, price, categories, rating) in enumerate(bundles[cluster_filter], 1):
-        st.markdown(f"""
-        <div class="card cluster-{cluster_filter}">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h4 style="margin:0;">📦 Bundle #{idx}: {name}</h4>
-                    <p style="color:#64748b; margin:0.5rem 0;">Danh mục: {', '.join(categories)}</p>
+    # Load association rules
+    try:
+        rules_df = pd.read_csv('data/processed/rules_apriori_filtered.csv', encoding='utf-8')
+        
+        # CLUSTER-SPECIFIC SORTING STRATEGIES
+        # Mỗi cụm có chiến lược khác nhau để gợi ý sản phẩm
+        sorting_config = {
+            0: ('lift', 'Premium Collector - Quy tắc mạnh mẽ nhất'),           # Premium: highest lift (strongest associations)
+            1: ('support', 'Casual Shopper - Sản phẩm phổ biến nhất'),          # Casual: highest support (popular bundles)
+            2: ('confidence', 'New Explorer - Quy tắc chắc chắn nhất'),         # New: high confidence (reliable recommendations)
+            3: ('leverage', 'Deal Hunter - Quy tắc tiết kiệm nhất')             # Deal: high leverage (best value)
+        }
+        
+        sort_by, cluster_desc = sorting_config[cluster_filter]
+        rules_df_sorted = rules_df.sort_values(sort_by, ascending=False)
+        
+        # Thêm chỉ số để theo dõi vị trí
+        rules_df_sorted = rules_df_sorted.reset_index(drop=True)
+        
+        # Lấy skip dựa trên cluster để hiển thị bundle khác nhau
+        skip_indices = {
+            0: list(range(0, 20, 3)),      # Cluster 0: bundles 0, 3, 6, 9, 12, 15
+            1: list(range(1, 20, 3)),      # Cluster 1: bundles 1, 4, 7, 10, 13, 16
+            2: list(range(2, 20, 3)),      # Cluster 2: bundles 2, 5, 8, 11, 14, 17
+            3: list(range(0, 30, 5))       # Cluster 3: bundles 0, 5, 10, 15, 20, 25
+        }
+        
+        # Extract bundle information
+        bundles_display = []
+        for cluster_idx in skip_indices[cluster_filter][:6]:
+            if cluster_idx < len(rules_df_sorted):
+                row = rules_df_sorted.iloc[cluster_idx]
+                antecedents = row['antecedents_str'].strip()
+                consequents = row['consequents_str'].strip()
+                confidence = row['confidence']
+                lift = row['lift']
+                support = row['support']
+                
+                # Create bundle info
+                bundle_name = f"{antecedents} + {consequents}"
+                rating = "⭐" * min(5, max(1, int(confidence * 5)))
+                metrics = f"Confidence: {confidence:.1%} | Lift: {lift:.2f} | Support: {support:.2%}"
+                bundles_display.append((bundle_name, rating, metrics, confidence, lift))
+        
+        # Display cluster description
+        st.info(f"🎯 {cluster_desc}")
+        
+        # Display bundles
+        if bundles_display:
+            for idx, (bundle, rating, metrics, conf, lift) in enumerate(bundles_display, 1):
+                # Color code by lift value
+                if lift > 10:
+                    color = "#10b981"  # Green - excellent
+                elif lift > 5:
+                    color = "#3b82f6"  # Blue - good
+                else:
+                    color = "#f59e0b"  # Amber - moderate
+                
+                st.markdown(f"""
+                <div class="card cluster-{cluster_filter}" style="border-left: 5px solid {color};">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div style="flex:1;">
+                            <h4 style="margin:0.5rem 0;">📦 Bundle #{idx}</h4>
+                            <p style="color:#1e293b; margin:0.5rem 0; font-size:0.9rem; line-height:1.4;"><strong>{bundle}</strong></p>
+                            <p style="color:#64748b; margin:0.5rem 0; font-size:0.85rem;">{metrics}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p style="font-size:1.2rem; margin:0;">{rating}</p>
+                            <p style="color:{color}; font-weight:700; font-size:0.9rem; margin:0.5rem 0;">Lift: {lift:.2f}x</p>
+                        </div>
+                    </div>
                 </div>
-                <div style="text-align:right;">
-                    <p style="font-size:1.5rem; font-weight:700; color:{profile['color']}; margin:0;">{price}</p>
-                    <p style="margin:0;">{rating}</p>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+                st.markdown("")
+        else:
+            st.info("📊 Không có dữ liệu bundle từ quy tắc kết hợp")
+            
+    except Exception as e:
+        st.error(f"⚠️ Lỗi tải dữ liệu: {str(e)}")
 
 # ============================================================================
 # PAGE 5: MARKETING STRATEGY

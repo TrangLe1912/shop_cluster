@@ -390,55 +390,55 @@ Inertia
 
 #### 🏆 Cluster 0 - Premium Collector (6.7%)
 
-**Chiến lược:** VIP Retention & Upsell
+**Chiến lược:** VIP Retention & Upsell với Bundle cao lift
 
 | Action | Chi tiết | Liên hệ đặc trưng cụm |
 |--------|----------|----------------------|
 | **VIP Program** | Tạo tier membership với early access | Cluster này có Frequency cao (12.3 orders), cần reward loyalty |
-| **Complete Your Set** | Gợi ý TEACUP còn thiếu trong bộ | 78.2% activation rate cho TEACUP rules |
+| **Premium Bundle** | Gợi ý bundle với **Lift cao** (27.2x) - sản phẩm liên quan chặt | WOODEN HEART + WOODEN STAR, TEACUP set combos |
 | **Limited Edition** | Ưu tiên mua Christmas collections mới | 65.4% mua CHRISTMAS SCANDINAVIAN |
 | **Free Shipping** | Miễn phí ship cho đơn > £50 | Avg Monetary £1,460, không cần threshold cao |
 
-**Email Campaign:** "Exclusive Preview: New Christmas 2024 Collection - Just for You"
+**Email Campaign:** "🎁 Exclusive VIP Bundle: Complete Your Collection + 20% Off"
 
 #### 🛍️ Cluster 1 - Casual Shopper (80.6%)
 
-**Chiến lược:** Increase Frequency & Cross-sell
+**Chiến lược:** Increase Frequency & Cross-sell với sản phẩm phổ biến
 
 | Action | Chi tiết | Liên hệ đặc trưng cụm |
 |--------|----------|----------------------|
-| **Bundle Deals** | Tạo combo 3 items với discount 15% | Không có preference → cần gợi ý |
+| **Popular Bundle** | Gợi ý bundle có **Support cao** (5.3%+) - sản phẩm bán chạy nhất | TEACUP set, CHARLOTTE BAG combos |
 | **Reactivation Email** | Gửi sau 60 ngày không mua | Avg Recency 89 ngày |
 | **Free Shipping Threshold** | Miễn ship cho đơn > £40 | Avg Monetary £385, cần incentive |
 | **Category Discovery** | Recommend sản phẩm từ category mới | Mua đa dạng nhưng không sâu |
 
-**Email Campaign:** "Complete Your Order: Bundle & Save 15% Today!"
+**Email Campaign:** "🌟 Popular Bundle Alert: Best Sellers + 15% Off (Limited Time)"
 
 #### 🆕 Cluster 2 - New Explorer (8.6%)
 
-**Chiến lược:** Onboarding & Product Discovery
+**Chiến lược:** Onboarding & Product Discovery với quy tắc chắc chắn
 
 | Action | Chi tiết | Liên hệ đặc trưng cụm |
 |--------|----------|----------------------|
-| **Welcome Discount** | 15% off cho đơn hàng thứ 2 | Recency thấp (25 days), cần convert nhanh |
-| **Product Guide** | Email giới thiệu best sellers | Đang khám phá, cần hướng dẫn |
+| **Welcome Bundle** | Gợi ý bundle có **Confidence cao** (90%+) - quy tắc đáng tin cậy | CHARLOTTE BAG combos (92% confidence) |
+| **Product Guide** | Email giới thiệu best sellers + reliable combos | Đang khám phá, cần hướng dẫn |
 | **Starter Bundle** | Combo entry-level với giá tốt | Avg Monetary £125, chưa sẵn sàng chi cao |
 | **Review Request** | Xin review sau mua → engagement | Frequency thấp (2.1), cần tăng engagement |
 
-**Email Campaign:** "Welcome! Here's 15% Off Your Next Order 🎁"
+**Email Campaign:** "👋 Welcome! Trusted Combos to Try 🎯 (15% Off)"
 
 #### 💰 Cluster 3 - Deal Hunter (4.1%)
 
-**Chiến lược:** Reactivation & Value Perception
+**Chiến lược:** Reactivation & Value Perception với leverage cao
 
 | Action | Chi tiết | Liên hệ đặc trưng cụm |
 |--------|----------|----------------------|
+| **Value Bundle** | Gợi ý bundle có **Leverage cao** - tiết kiệm & lợi nhuận tốt | Clearance combos, sale items |
 | **Flash Sale Alert** | Push notification khi có sale | Recency cao (156 days), cần urgency |
-| **Clearance Newsletter** | Email weekly deals | 45.8% mua discount items |
-| **Win-back Campaign** | "We Miss You" + 20% off | Đã lâu không mua, cần incentive mạnh |
-| **Price Drop Alert** | Thông báo khi sản phẩm đã xem giảm giá | Budget conscious behavior |
+| **Clearance Newsletter** | Email weekly deals + bundle discounts | 45.8% mua discount items |
+| **Win-back Campaign** | "We Miss You" + 25% off bundle | Đã lâu không mua, cần incentive mạnh |
 
-**Email Campaign:** "⚡ Flash Sale: 50% Off Everything This Weekend Only!"
+**Email Campaign:** "⚡ Mega Deal Bundle: Save 40% on Best Value Combos!"
 
 ---
 
@@ -453,20 +453,66 @@ Dashboard được xây dựng với **Streamlit** bao gồm:
 | **Overview** | Tổng quan 4 clusters với pie chart và key metrics |
 | **Cluster Details** | Lọc theo cluster, xem profiling chi tiết |
 | **Top Rules** | Xem top rules theo cluster, filter by lift/confidence |
-| **Bundle Suggestions** | Gợi ý cross-sell dựa trên rules của mỗi cluster |
+| **Bundle Suggestions** | Gợi ý cross-sell tùy theo chiến lược của mỗi cluster |
 | **Marketing Strategy** | Chiến lược marketing với action items cụ thể |
+
+### 9.1.1 Chiến lược Bundle theo Cluster
+
+Mỗi cụm có **chiến lược bundle khác nhau** dựa trên đặc điểm và hành vi mua hàng:
+
+| Cluster | Chiến lược | Tiêu chí chọn | Lý do |
+|---------|-----------|--------------|------|
+| **0: Premium Collector** | Sản phẩm có **Lift cao** | Quy tắc mạnh mẽ (Lift ↑) | Khách VIP thích bundle có tính liên quan cao, tỷ lệ thành công cao |
+| **1: Casual Shopper** | Sản phẩm **phổ biến** | Có Support cao (Support ↑) | Khách thường xuyên mua sản phẩm phổ biến, dễ chấp nhận |
+| **2: New Explorer** | Quy tắc **chắc chắn** | Confidence cao (Confidence ↑) | Khách mới cần gợi ý đáng tin cậy, không muốn rủi ro |
+| **3: Deal Hunter** | Sản phẩm **tiết kiệm** | Leverage cao (Leverage ↑) | Khách tìm combo có giá trị cao, lợi nhuận tốt |
+
+**Ví dụ:**
+- **Premium (Cluster 0):** "WOODEN HEART + WOODEN STAR" (Lift: 27.2x) → Sản phẩm Giáng sinh đi kèm
+- **Casual (Cluster 1):** "PINK TEACUP + GREEN TEACUP + ROSES TEACUP" (Support: 5.3%) → Bộ sưu tập bán chạy nhất
+- **New (Cluster 2):** "CHARLOTTE BAG + STRAWBERRY BAG" (Confidence: 92%) → Bundle chắc chắn hiệu quả
+- **Deal (Cluster 3):** Combo tiết kiệm với highest leverage score
 
 ### 9.2 Cách chạy Dashboard
 
 ```bash
 # Cài đặt dependencies
-pip install -r requirements_dashboard.txt
+pip install streamlit pandas numpy plotly
 
 # Chạy dashboard
 streamlit run dashboard.py
 ```
 
 **URL:** http://localhost:8501
+
+### 9.2.1 Giải thích Bundle Suggestions
+
+**Mục đích:** Gợi ý sản phẩm nên bán cùng nhau (cross-sell/bundle deals)
+
+**Cách hoạt động:**
+
+1. **Tải dữ liệu quy tắc:** Đọc 177 quy tắc kết hợp từ Apriori
+2. **Sắp xếp theo chiến lược cluster:**
+   - Cluster 0: Sort by `lift` DESC → Top rules mạnh mẽ nhất
+   - Cluster 1: Sort by `support` DESC → Sản phẩm phổ biến nhất
+   - Cluster 2: Sort by `confidence` DESC → Quy tắc chắc chắn nhất
+   - Cluster 3: Sort by `leverage` DESC → Tiết kiệm/lợi nhuận cao
+3. **Chọn bundles:** Lấy 6 bundle đầu tiên (skip indices khác nhau cho mỗi cluster)
+4. **Hiển thị:** Sản phẩm A + Sản phẩm B + Metrics (Confidence, Lift, Support)
+
+**Ví dụ Cluster 0 (Premium - Lift cao):**
+```
+Bundle #1: WOODEN HEART CHRISTMAS + WOODEN STAR CHRISTMAS
+Confidence: 72.3% | Lift: 27.2x | Support: 2.04%
+⭐⭐⭐⭐ (4 sao)
+```
+
+**Ví dụ Cluster 1 (Casual - Support cao):**
+```
+Bundle #1: GREEN TEACUP + PINK TEACUP + ROSES TEACUP
+Confidence: 61.8% | Lift: 15.9x | Support: 3.20%
+⭐⭐⭐ (3 sao)
+```
 
 ### 9.3 Screenshot Dashboard
 
