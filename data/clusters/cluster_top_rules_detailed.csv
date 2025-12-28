@@ -1,41 +1,41 @@
-Cluster_ID,Cluster_Name,Rule_Rank,Rule_Name,Activation_Rate_%,Avg_Weight
-0,High-Value Consistent Buyers,1,rule_66,11.494252873563218,0.3902130047707378
-0,High-Value Consistent Buyers,2,rule_174,11.494252873563218,0.09943986344871944
-0,High-Value Consistent Buyers,3,rule_84,10.919540229885058,0.34505657844513954
-0,High-Value Consistent Buyers,4,rule_56,10.504469987228608,0.32992618649114674
-0,High-Value Consistent Buyers,5,rule_81,10.504469987228608,0.2731445461610509
-0,High-Value Consistent Buyers,6,rule_166,10.312899106002554,0.2203708114554629
-0,High-Value Consistent Buyers,7,rule_138,10.185185185185185,0.26064041301519525
-0,High-Value Consistent Buyers,8,rule_152,10.185185185185185,0.21135779981538663
-0,High-Value Consistent Buyers,9,rule_159,10.185185185185185,0.1867612219906034
-0,High-Value Consistent Buyers,10,rule_85,9.929757343550447,0.31097791730640817
-1,Occasional Premium Shoppers,1,rule_4,100.0,13.75327836253487
-1,Occasional Premium Shoppers,2,rule_5,100.0,9.805165233926129
-1,Occasional Premium Shoppers,3,rule_6,100.0,13.017683757862036
-1,Occasional Premium Shoppers,4,rule_11,100.0,11.361607308874683
-1,Occasional Premium Shoppers,5,rule_19,100.0,10.633720713358718
-1,Occasional Premium Shoppers,6,rule_163,100.0,2.5378085865660287
-1,Occasional Premium Shoppers,7,rule_84,26.446280991735538,0.8357003169997986
-1,Occasional Premium Shoppers,8,rule_166,25.206611570247933,0.5386265674358302
-1,Occasional Premium Shoppers,9,rule_85,24.793388429752067,0.7764737878374242
-1,Occasional Premium Shoppers,10,rule_56,21.074380165289256,0.6619077296667066
-2,New/Experimental Buyers,1,rule_10,78.39195979899498,6.406434240599899
-2,New/Experimental Buyers,2,rule_15,78.39195979899498,6.073266755370537
-2,New/Experimental Buyers,3,rule_17,78.39195979899498,5.906509007301299
-2,New/Experimental Buyers,4,rule_25,78.39195979899498,7.2454186701638585
-2,New/Experimental Buyers,5,rule_26,78.39195979899498,5.399963194928324
-2,New/Experimental Buyers,6,rule_29,78.39195979899498,5.991689952571956
-2,New/Experimental Buyers,7,rule_34,78.39195979899498,4.703971775326031
-2,New/Experimental Buyers,8,rule_40,78.39195979899498,4.861900632459688
-2,New/Experimental Buyers,9,rule_164,78.39195979899498,1.6219971116869296
-2,New/Experimental Buyers,10,rule_169,78.39195979899498,1.3271359010089512
-3,Budget-Conscious Value Seekers,1,rule_0,80.74712643678161,15.879269585779655
-3,Budget-Conscious Value Seekers,2,rule_1,80.17241379310344,16.753697673431116
-3,Budget-Conscious Value Seekers,3,rule_66,29.597701149425287,1.0047984872846498
-3,Budget-Conscious Value Seekers,4,rule_174,29.597701149425287,0.25605764838045253
-3,Budget-Conscious Value Seekers,5,rule_67,21.839080459770116,0.944195931456197
-3,Budget-Conscious Value Seekers,6,rule_56,21.26436781609195,0.6678748942343579
-3,Budget-Conscious Value Seekers,7,rule_81,21.26436781609195,0.5529309049947109
-3,Budget-Conscious Value Seekers,8,rule_166,20.977011494252874,0.4482465112267465
-3,Budget-Conscious Value Seekers,9,rule_46,19.82758620689655,0.9133582019136166
-3,Budget-Conscious Value Seekers,10,rule_171,19.82758620689655,0.23298675433517427
+Cluster_ID,Cluster_Name,Cluster_Name_VI,Rule_Rank,Rule_Column,Rule_Name,Activation_Rate_%,Avg_Weight
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,1,rule_66,frozenset({'HEART OF WICKER SMALL'}) ? frozenset({'HEART OF WICKER LARGE'}),11.49425287,0.390213005
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,2,rule_174,frozenset({'HEART OF WICKER SMALL'}) ? frozenset({'WHITE HANGING HEART T-LIGHT HOLDER'}),11.49425287,0.099439863
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,3,rule_84,frozenset({'JAM MAKING SET WITH JARS'}) ? frozenset({'JAM MAKING SET PRINTED'}),10.91954023,0.345056578
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,4,rule_56,frozenset({'PACK OF 72 RETROSPOT CAKE CASES'}) ? frozenset({'60 TEATIME FAIRY CAKE CASES'}),10.50446999,0.329926186
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,5,rule_81,frozenset({'PACK OF 72 RETROSPOT CAKE CASES'}) ? frozenset({'PACK OF 60 PINK PAISLEY CAKE CASES'}),10.50446999,0.273144546
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,6,rule_166,frozenset({'SPOTTY BUNTING'}) ? frozenset({'PARTY BUNTING'}),10.31289911,0.220370811
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,7,rule_138,frozenset({'JUMBO BAG RED RETROSPOT'}) ? frozenset({'JUMBO BAG PINK POLKADOT'}),10.18518519,0.260640413
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,8,rule_152,frozenset({'JUMBO BAG RED RETROSPOT'}) ? frozenset({'JUMBO STORAGE BAG SUKI'}),10.18518519,0.2113578
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,9,rule_159,frozenset({'JUMBO BAG RED RETROSPOT'}) ? frozenset({'JUMBO SHOPPER VINTAGE RED PAISLEY'}),10.18518519,0.186761222
+0,High-Value Consistent Buyers,Khách Hàng Mua Hàng Th??ng Xuyên Và Chi Tiêu Cao,10,rule_85,frozenset({'JAM MAKING SET PRINTED'}) ? frozenset({'JAM MAKING SET WITH JARS'}),9.929757344,0.310977917
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,1,rule_4,"frozenset({'PINK REGENCY TEACUP AND SAUCER', 'GREEN REGENCY TEACUP AND SAUCER'}) ? frozenset({'ROSES REGENCY TEACUP AND SAUCER '})",100,13.75327836
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,2,rule_5,frozenset({'GREEN REGENCY TEACUP AND SAUCER'}) ? frozenset({'PINK REGENCY TEACUP AND SAUCER'}),100,9.805165234
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,3,rule_6,frozenset({'PINK REGENCY TEACUP AND SAUCER'}) ? frozenset({'GREEN REGENCY TEACUP AND SAUCER'}),100,13.01768376
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,4,rule_11,frozenset({'PINK REGENCY TEACUP AND SAUCER'}) ? frozenset({'ROSES REGENCY TEACUP AND SAUCER '}),100,11.36160731
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,5,rule_19,frozenset({'GREEN REGENCY TEACUP AND SAUCER'}) ? frozenset({'ROSES REGENCY TEACUP AND SAUCER '}),100,10.63372071
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,6,rule_163,frozenset({'GREEN REGENCY TEACUP AND SAUCER'}) ? frozenset({'REGENCY CAKESTAND 3 TIER'}),100,2.537808587
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,7,rule_84,frozenset({'JAM MAKING SET WITH JARS'}) ? frozenset({'JAM MAKING SET PRINTED'}),26.44628099,0.835700317
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,8,rule_166,frozenset({'SPOTTY BUNTING'}) ? frozenset({'PARTY BUNTING'}),25.20661157,0.538626567
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,9,rule_85,frozenset({'JAM MAKING SET PRINTED'}) ? frozenset({'JAM MAKING SET WITH JARS'}),24.79338843,0.776473788
+1,Occasional Premium Shoppers,Khách Hàng Mua S?m Th?nh Tho?ng V?i Giá Cao,10,rule_56,frozenset({'PACK OF 72 RETROSPOT CAKE CASES'}) ? frozenset({'60 TEATIME FAIRY CAKE CASES'}),21.07438017,0.66190773
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,1,rule_10,frozenset({'STRAWBERRY CHARLOTTE BAG'}) ? frozenset({'WOODLAND CHARLOTTE BAG'}),78.3919598,6.406434241
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,2,rule_15,frozenset({'STRAWBERRY CHARLOTTE BAG'}) ? frozenset({'CHARLOTTE BAG PINK POLKADOT'}),78.3919598,6.073266755
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,3,rule_17,frozenset({'RED RETROSPOT CHARLOTTE BAG'}) ? frozenset({'CHARLOTTE BAG PINK POLKADOT'}),78.3919598,5.906509007
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,4,rule_25,frozenset({'STRAWBERRY CHARLOTTE BAG'}) ? frozenset({'RED RETROSPOT CHARLOTTE BAG'}),78.3919598,7.24541867
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,5,rule_26,frozenset({'RED RETROSPOT CHARLOTTE BAG'}) ? frozenset({'STRAWBERRY CHARLOTTE BAG'}),78.3919598,5.399963195
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,6,rule_29,frozenset({'STRAWBERRY CHARLOTTE BAG'}) ? frozenset({'CHARLOTTE BAG SUKI DESIGN'}),78.3919598,5.991689953
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,7,rule_34,frozenset({'RED RETROSPOT CHARLOTTE BAG'}) ? frozenset({'WOODLAND CHARLOTTE BAG'}),78.3919598,4.703971775
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,8,rule_40,frozenset({'RED RETROSPOT CHARLOTTE BAG'}) ? frozenset({'CHARLOTTE BAG SUKI DESIGN'}),78.3919598,4.861900632
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,9,rule_164,frozenset({'RED RETROSPOT CHARLOTTE BAG'}) ? frozenset({'LUNCH BAG RED RETROSPOT'}),78.3919598,1.621997112
+2,New/Experimental Buyers,Khách Hàng M?i Ho?c Th? Nghi?m,10,rule_169,frozenset({'RED RETROSPOT CHARLOTTE BAG'}) ? frozenset({'JUMBO BAG RED RETROSPOT'}),78.3919598,1.327135901
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,1,rule_0,frozenset({'WOODEN HEART CHRISTMAS SCANDINAVIAN'}) ? frozenset({'WOODEN STAR CHRISTMAS SCANDINAVIAN'}),80.74712644,15.87926959
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,2,rule_1,frozenset({'WOODEN STAR CHRISTMAS SCANDINAVIAN'}) ? frozenset({'WOODEN HEART CHRISTMAS SCANDINAVIAN'}),80.17241379,16.75369767
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,3,rule_66,frozenset({'HEART OF WICKER SMALL'}) ? frozenset({'HEART OF WICKER LARGE'}),29.59770115,1.004798487
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,4,rule_174,frozenset({'HEART OF WICKER SMALL'}) ? frozenset({'WHITE HANGING HEART T-LIGHT HOLDER'}),29.59770115,0.256057648
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,5,rule_67,frozenset({'HEART OF WICKER LARGE'}) ? frozenset({'HEART OF WICKER SMALL'}),21.83908046,0.944195931
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,6,rule_56,frozenset({'PACK OF 72 RETROSPOT CAKE CASES'}) ? frozenset({'60 TEATIME FAIRY CAKE CASES'}),21.26436782,0.667874894
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,7,rule_81,frozenset({'PACK OF 72 RETROSPOT CAKE CASES'}) ? frozenset({'PACK OF 60 PINK PAISLEY CAKE CASES'}),21.26436782,0.552930905
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,8,rule_166,frozenset({'SPOTTY BUNTING'}) ? frozenset({'PARTY BUNTING'}),20.97701149,0.448246511
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,9,rule_46,frozenset({'WOODEN PICTURE FRAME WHITE FINISH'}) ? frozenset({'WOODEN FRAME ANTIQUE WHITE '}),19.82758621,0.913358202
+3,Budget-Conscious Value Seekers,Khách Hàng Tìm Ki?m Giá R?,10,rule_171,frozenset({'WOODEN PICTURE FRAME WHITE FINISH'}) ? frozenset({'WHITE HANGING HEART T-LIGHT HOLDER'}),19.82758621,0.232986754
