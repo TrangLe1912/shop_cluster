@@ -1,7 +1,11 @@
 import papermill as pm
 import os
 
+# ==============================
+# SETUP
+# ==============================
 os.makedirs("notebooks/runs", exist_ok=True)
+os.makedirs("data/processed", exist_ok=True)
 
 # ==============================
 # 1. PREPROCESSING + EDA
@@ -13,6 +17,8 @@ pm.execute_notebook(
         DATA_PATH="data/raw/online_retail.csv",
         COUNTRY="United Kingdom",
         OUTPUT_DIR="data/processed",
+
+        # Tắt toàn bộ plot khi chạy batch
         PLOT_REVENUE=False,
         PLOT_TIME_PATTERNS=False,
         PLOT_PRODUCTS=False,
@@ -40,31 +46,44 @@ pm.execute_notebook(
 )
 
 # ==============================
-# 3. FP-GROWTH MODELLING (THAY APRIORI)
+# 3. FP-GROWTH MODELLING
+# (NGUYÊN LIỆU ĐẦU VÀO CHO CLUSTERING)
 # ==============================
 pm.execute_notebook(
     "notebooks/fp_growth_modelling.ipynb",
     "notebooks/runs/fp_growth_modelling_run.ipynb",
     parameters=dict(
         BASKET_BOOL_PATH="data/processed/basket_bool.parquet",
-        RULES_OUTPUT_PATH="data/processed/rules_fpgrowth_filtered.csv",
 
-        # Tham số FP-Growth (an toàn RAM)
-        MIN_SUPPORT=0.03,
-        MAX_LEN=3,
+        # FILE LUẬT CHÍNH THỨC CHO CẢ NHÓM
+        RULES_OUTPUT_PATH="data/processed/rules_top50_fpgrowth.csv",
 
+        # =========================
+        # FP-Growth parameters
+        # =========================
+        MIN_SUPPORT=0.03,     # đủ mạnh, tránh nhiễu
+        MAX_LEN=3,            # tránh luật quá dài
+
+        # Sinh luật
         METRIC="lift",
         MIN_THRESHOLD=1.0,
 
+        # =========================
+        # FILTER RULES
+        # =========================
         FILTER_MIN_SUPPORT=0.03,
         FILTER_MIN_CONF=0.3,
         FILTER_MIN_LIFT=1.2,
+
         FILTER_MAX_ANTECEDENTS=2,
         FILTER_MAX_CONSEQUENTS=1,
 
-        TOP_N_RULES=20,
+        # TOP-K LUẬT ĐƯA VÀO PHÂN CỤM
+        TOP_N_RULES=50,
 
-        # Tắt plot khi chạy batch
+        # =========================
+        # TẮT TOÀN BỘ PLOT
+        # =========================
         PLOT_TOP_LIFT=False,
         PLOT_TOP_CONF=False,
         PLOT_SCATTER=False,
@@ -74,35 +93,4 @@ pm.execute_notebook(
     kernel_name="python3",
 )
 
-# ==============================
-# 4. CLUSTERING FROM RULES (DÙNG RULE FP-GROWTH)
-# ==============================
-pm.execute_notebook(
-    "notebooks/clustering_from_rules.ipynb",
-    "notebooks/runs/clustering_from_rules_run.ipynb",
-    parameters=dict(
-        CLEANED_DATA_PATH="data/processed/cleaned_uk_data.csv",
-        RULES_INPUT_PATH="data/processed/rules_fpgrowth_filtered.csv",
-
-        TOP_K_RULES=200,
-        SORT_RULES_BY="lift",
-        WEIGHTING="lift",
-        MIN_ANTECEDENT_LEN=1,
-        USE_RFM=True,
-        RFM_SCALE=True,
-        RULE_SCALE=False,
-
-        K_MIN=2,
-        K_MAX=10,
-        N_CLUSTERS=None,
-        RANDOM_STATE=42,
-
-        OUTPUT_CLUSTER_PATH="data/processed/customer_clusters_from_rules.csv",
-
-        PROJECTION_METHOD="pca",
-        PLOT_2D=True,
-    ),
-    kernel_name="python3",
-)
-
-print("✅ Đã chạy xong pipeline với FP-Growth")
+print("✅ Đã hoàn thành pipeline FP-Growth và xuất rules_top50_fpgrowth.csv")
