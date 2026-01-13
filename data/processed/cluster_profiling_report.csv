@@ -1,0 +1,3 @@
+﻿cluster_id,vietnamese_name,english_name,n_customers,percent_total,avg_recency,avg_frequency,avg_monetary,description,strategy
+0,Khách mua ít,Light Buyer - General,983,25.1%,245.4,1.6,£622,"Khách hàng light buyer, chi tiêu trung bình £622, mua 1.6 lần",• Email marketing cơ bản | • Ưu đãi cho new buyer | • Gợi ý sản phẩm phổ biến
+1,Khách VIP trung thành,VIP Loyal - General,2938,74.9%,40.9,5.6,£2864,"Khách hàng vip loyal, chi tiêu trung bình £2864, mua 5.6 lần","• Chương trình VIP, ưu đãi đặc biệt | • Gợi ý sản phẩm cao cấp | • Dịch vụ cá nhân hóa"
