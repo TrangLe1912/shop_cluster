@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-YÊU CẦU 2.2.7: DASHBOARD STREAMLIT
+YÊU CẦU 2.2.7: DASHBOARD STREAMLIT - PHIÊN BẢN ĐẦY ĐỦ VỚI GIẢI THÍCH
 File: app.py
 Chạy: streamlit run app.py
+
+Phiên bản này được làm đầy đủ hơn với:
+- Dữ liệu mẫu fallback chi tiết
+- Giải thích cho từng phần giao diện (sử dụng st.info, st.caption, markdown)
+- Biểu đồ trực quan đầy đủ
+- Gợi ý bundle/cross-sell theo cụm
+- Xử lý lỗi và hướng dẫn người dùng
 """
 
 import streamlit as st
@@ -10,12 +17,13 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import os
+from sklearn.decomposition import PCA
 
 # ============================================================================
 # CONFIG TRANG
 # ============================================================================
+# Giải thích: Cấu hình trang dashboard để có tiêu đề, icon, layout rộng và sidebar mở rộng
 st.set_page_config(
     page_title="Customer Segmentation Dashboard",
     page_icon="🛒",
@@ -28,22 +36,22 @@ st.set_page_config(
 # ============================================================================
 @st.cache_data
 def load_data():
-    """Tải tất cả dữ liệu đã xử lý từ các bước trước"""
+    """Tải tất cả dữ liệu đã xử lý từ các bước trước. 
+    Giải thích: Hàm này tải các file CSV từ thư mục data/processed. 
+    Nếu file không tồn tại, sử dụng dữ liệu mẫu để dashboard vẫn chạy được."""
     
-    # Đường dẫn thư mục data
     data_dir = "data/processed"
     
-    # Dictionary chứa tất cả dữ liệu
     data = {
         'loaded': True,
         'profiling': None,
         'clusters': None,
         'rules': None,
-        'features': None
+        'X': None  # Để tính PCA
     }
     
     try:
-        # 1. Profiling Report (từ 2.2.6)
+        # 1. Profiling Report (từ 2.2.6) - Báo cáo mô tả các cụm
         profiling_path = os.path.join(data_dir, "cluster_profiling_report.csv")
         if os.path.exists(profiling_path):
             data['profiling'] = pd.read_csv(profiling_path, encoding='utf-8-sig')
@@ -75,10 +83,15 @@ def load_data():
                 ]
             })
             
-        # 2. Cluster Results (từ 2.2.3)
+        # 2. Cluster Results (từ 2.2.3) - Dữ liệu phân cụm khách hàng
         cluster_path = os.path.join(data_dir, "customer_clusters.csv")
         if os.path.exists(cluster_path):
             data['clusters'] = pd.read_csv(cluster_path)
+            # Chuẩn hóa tên cột cluster
+            for col in ['cluster', 'Cluster', 'Cluster_V2']:
+                if col in data['clusters'].columns:
+                    data['clusters'] = data['clusters'].rename(columns={col: 'Cluster'})
+                    break
             st.success(f"✅ Đã tải cluster data: {len(data['clusters']):,} khách hàng")
         else:
             st.warning("⚠️ Chưa tìm thấy cluster data, tạo dữ liệu mẫu...")
@@ -86,13 +99,13 @@ def load_data():
             n_customers = 1700
             data['clusters'] = pd.DataFrame({
                 'CustomerID': [f"CUST{i:06d}" for i in range(n_customers)],
-                'Cluster_V2': np.random.choice([0, 1, 2, 3], n_customers, p=[0.125, 0.25, 0.375, 0.10]),
+                'Cluster': np.random.choice([0, 1, 2, 3], n_customers, p=[0.125, 0.25, 0.375, 0.10]),
                 'Recency': np.random.exponential(50, n_customers).round(),
                 'Frequency': np.random.poisson(5, n_customers) + 1,
                 'Monetary': np.random.lognormal(6, 1, n_customers).round(2)
             })
             
-        # 3. Rules Data (từ 2.2.1)
+        # 3. Rules Data (từ 2.2.1) - Dữ liệu luật kết hợp
         rules_path = os.path.join(data_dir, "selected_rules_for_clustering.csv")
         if os.path.exists(rules_path):
             data['rules'] = pd.read_csv(rules_path)
@@ -117,17 +130,13 @@ def load_data():
                  'support': 0.025, 'confidence': 0.82, 'lift': 5.4}
             ]
             data['rules'] = pd.DataFrame(sample_rules)
-            
-        # 4. Features Metadata (từ 2.2.2)
-        features_dir = os.path.join(data_dir, "features")
-        if os.path.exists(features_dir):
-            metadata_path = os.path.join(features_dir, "metadata.json")
-            if os.path.exists(metadata_path):
-                import json
-                with open(metadata_path, 'r') as f:
-                    data['features'] = json.load(f)
-                st.success("✅ Đã tải features metadata")
-                
+
+        # 4. Features cho PCA (từ 2.2.2) - Dữ liệu đặc trưng để giảm chiều
+        x_path = os.path.join(data_dir, "features", "X_combined.npy")
+        if os.path.exists(x_path):
+            data['X'] = np.load(x_path)
+            st.success("✅ Đã tải features cho PCA")
+
     except Exception as e:
         st.error(f"❌ Lỗi khi tải dữ liệu: {e}")
         data['loaded'] = False
@@ -135,15 +144,78 @@ def load_data():
     return data
 
 # ============================================================================
-# HÀM HIỂN THỊ
+# SIDEBAR
+# ============================================================================
+def display_sidebar(data):
+    """Sidebar để điều hướng và hiển thị trạng thái.
+    Giải thích: Sidebar giúp người dùng chọn trang và xem thông tin dữ liệu nhanh chóng."""
+    
+    with st.sidebar:
+        st.image("https://img.icons8.com/color/96/000000/shopping-cart--v1.png", width=80)
+        
+        st.markdown("## 🛒 Mini Project")
+        st.markdown("**Phân cụm khách hàng**")
+        st.markdown("---")
+        
+        # Navigation - Lựa chọn trang
+        st.markdown("### 📊 Điều hướng")
+        page = st.radio(
+            "Chọn trang:",
+            ["🏠 Tổng quan", 
+             "📈 Profiling cụm", 
+             "🔍 Phân tích Rules", 
+             "🌐 Phân bố 2D (PCA)", 
+             "👤 Tìm kiếm KH",
+             "⚙️ Cài đặt"]
+        )
+        
+        st.markdown("---")
+        
+        # Thông tin project - Giới thiệu ngắn gọn
+        st.markdown("### ℹ️ Thông tin")
+        st.markdown("**Môn:** Data Mining")
+        st.markdown("**GV:** ThS. Lê Thị Thùy Trang")
+        st.markdown("**Nhóm:** 7")
+        
+        # Trạng thái dữ liệu - Hiển thị số lượng để người dùng biết dữ liệu có tải không
+        st.markdown("---")
+        st.markdown("### 💾 Trạng thái dữ liệu")
+        
+        if data['loaded']:
+            st.success("✅ Dữ liệu đã tải xong")
+            
+            if data['profiling'] is not None:
+                st.info(f"📊 {len(data['profiling'])} cụm")
+            
+            if data['clusters'] is not None:
+                st.info(f"👥 {len(data['clusters']):,} khách hàng")
+            
+            if data['rules'] is not None:
+                st.info(f"🔗 {len(data['rules'])} luật")
+            
+            if data['X'] is not None:
+                st.info("🖼️ Có dữ liệu cho PCA")
+        else:
+            st.error("❌ Lỗi tải dữ liệu")
+        
+        # Nút làm mới - Để reload dữ liệu nếu cần
+        if st.button("🔄 Làm mới dữ liệu"):
+            st.cache_data.clear()
+            st.rerun()
+        
+        return page
+
+# ============================================================================
+# TRANG TỔNG QUAN
 # ============================================================================
 def display_overview(data):
-    """Hiển thị tổng quan dashboard"""
+    """Trang tổng quan: Hiển thị metrics chính và giới thiệu project.
+    Giải thích: Trang này cho người dùng cái nhìn tổng quát về dữ liệu và mục tiêu project."""
     
     st.title("🛒 Customer Segmentation Dashboard")
     st.markdown("**Phân cụm khách hàng dựa trên Luật Kết Hợp và RFM**")
     
-    # Tạo các metrics
+    # Tạo các metrics - Các chỉ số chính để dễ theo dõi
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -191,20 +263,71 @@ def display_overview(data):
             st.metric("Chi tiêu trung bình", "£500")
     
     st.markdown("---")
+    
+    # Giới thiệu project - Chi tiết mục tiêu và công nghệ
+    st.header("📋 Giới thiệu Project")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### 🎯 Mục tiêu")
+        st.markdown("""
+        1. Phân cụm khách hàng dựa trên luật kết hợp
+        2. Phân tích hành vi mua hàng
+        3. Đề xuất chiến lược marketing
+        4. Xây dựng dashboard trực quan
+        """)
+        st.caption("Giải thích: Mục tiêu giúp phân khúc khách hàng để marketing hiệu quả hơn.")
+    
+    with col2:
+        st.markdown("### 🔧 Công nghệ sử dụng")
+        st.markdown("""
+        • Python 3.11+
+        • Streamlit (Dashboard)
+        • Scikit-learn (Clustering)
+        • Pandas, NumPy (Data processing)
+        • Plotly (Visualization)
+        """)
+        st.caption("Giải thích: Các công nghệ này giúp xử lý dữ liệu và hiển thị trực quan.")
+    
+    # Hiển thị pipeline - Quy trình thực hiện project
+    st.markdown("---")
+    st.header("🔗 Data Pipeline")
+    st.caption("Giải thích: Pipeline mô tả các bước từ dữ liệu thô đến kết quả cuối cùng.")
+    
+    pipeline_steps = [
+        ("1. Data Cleaning", "Làm sạch dữ liệu giao dịch"),
+        ("2. Association Rules", "Khai thác luật kết hợp (Apriori/FP-Growth)"),
+        ("3. Feature Engineering", "Tạo đặc trưng từ rules và RFM"),
+        ("4. Clustering", "Phân cụm bằng K-Means"),
+        ("5. Profiling", "Phân tích và đặt tên các cụm"),
+        ("6. Dashboard", "Trực quan hóa kết quả")
+    ]
+    
+    for step, desc in pipeline_steps:
+        st.markdown(f"**{step}** - {desc}")
 
+# ============================================================================
+# TRANG PROFILING CỤM
+# ============================================================================
 def display_cluster_profiling(data):
-    """Hiển thị profiling các cụm"""
+    """Trang profiling: Hiển thị phân tích cụm với biểu đồ và chi tiết.
+    Giải thích: Trang này giúp người dùng hiểu đặc trưng của từng cụm khách hàng."""
     
     st.header("📊 Profiling các cụm khách hàng")
+    st.caption("Giải thích: Profiling bao gồm số lượng khách, RFM trung bình, và chiến lược marketing.")
     
     if data['profiling'] is None:
         st.warning("Chưa có dữ liệu profiling")
         return
     
-    # Tạo tabs
+    # Tạo tabs để tổ chức nội dung
     tab1, tab2, tab3 = st.tabs(["📈 Tổng quan", "🔍 Chi tiết từng cụm", "📋 Bảng dữ liệu"])
     
     with tab1:
+        st.subheader("Tổng quan phân bố")
+        st.caption("Giải thích: Biểu đồ cho thấy số lượng và tỉ lệ khách hàng theo từng cụm.")
+        
         # Biểu đồ phân bố khách hàng
         fig1 = px.bar(data['profiling'], 
                      x='cluster_id', 
@@ -217,48 +340,46 @@ def display_cluster_profiling(data):
         fig1.update_layout(showlegend=False)
         st.plotly_chart(fig1, use_container_width=True)
         
-        # Biểu đồ radar cho 4 cụm đầu
-        col1, col2 = st.columns(2)
+        # Biểu đồ pie phân bố
+        fig3 = px.pie(data['profiling'],
+                     values='n_customers',
+                     names='vietnamese_name',
+                     title='Tỉ lệ phân bố các cụm',
+                     hole=0.3)
+        fig3.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig3, use_container_width=True)
         
-        with col1:
-            # Bar chart chi tiêu
-            monetary_data = []
-            for idx, row in data['profiling'].iterrows():
-                try:
-                    monetary_str = str(row.get('avg_monetary', '0')).replace('£', '').replace(',', '').strip()
-                    if monetary_str.endswith('%'):
-                        monetary_str = monetary_str[:-1]
-                    monetary = float(monetary_str) if monetary_str.replace('.', '', 1).isdigit() else 0
-                    monetary_data.append({
-                        'cluster': f"Cụm {row['cluster_id']}",
-                        'value': monetary,
-                        'name': row.get('vietnamese_name', f"Cụm {row['cluster_id']}")
-                    })
-                except:
-                    continue
-            
-            if monetary_data:
-                monetary_df = pd.DataFrame(monetary_data)
-                fig2 = px.bar(monetary_df, 
-                            x='cluster', 
-                            y='value',
-                            title='Chi tiêu trung bình theo cụm',
-                            color='cluster',
-                            labels={'value': 'Chi tiêu (£)', 'cluster': 'Cụm'})
-                st.plotly_chart(fig2, use_container_width=True)
+        # Biểu đồ chi tiêu trung bình
+        monetary_data = []
+        for idx, row in data['profiling'].iterrows():
+            try:
+                monetary_str = str(row.get('avg_monetary', '0')).replace('£', '').replace(',', '').strip()
+                if monetary_str.endswith('%'):
+                    monetary_str = monetary_str[:-1]
+                monetary = float(monetary_str) if monetary_str.replace('.', '', 1).isdigit() else 0
+                monetary_data.append({
+                    'cluster': f"Cụm {row['cluster_id']}",
+                    'value': monetary,
+                    'name': row.get('vietnamese_name', f"Cụm {row['cluster_id']}")
+                })
+            except:
+                continue
         
-        with col2:
-            # Pie chart phân bố
-            fig3 = px.pie(data['profiling'],
-                         values='n_customers',
-                         names='vietnamese_name',
-                         title='Tỉ lệ phân bố các cụm',
-                         hole=0.3)
-            fig3.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(fig3, use_container_width=True)
+        if monetary_data:
+            monetary_df = pd.DataFrame(monetary_data)
+            fig2 = px.bar(monetary_df, 
+                          x='cluster', 
+                          y='value',
+                          title='Chi tiêu trung bình theo cụm',
+                          color='cluster',
+                          labels={'value': 'Chi tiêu (£)', 'cluster': 'Cụm'})
+            st.plotly_chart(fig2, use_container_width=True)
     
     with tab2:
-        # Hiển thị chi tiết từng cụm
+        st.subheader("Chi tiết từng cụm")
+        st.caption("Giải thích: Chọn cụm để xem mô tả, chỉ số RFM và chiến lược đề xuất.")
+        
+        # Chọn cụm
         selected_cluster = st.selectbox(
             "Chọn cụm để xem chi tiết",
             options=data['profiling']['cluster_id'].tolist(),
@@ -268,7 +389,7 @@ def display_cluster_profiling(data):
         if selected_cluster is not None:
             cluster_data = data['profiling'][data['profiling']['cluster_id'] == selected_cluster].iloc[0]
             
-            col1, col2 = st.columns([2, 1])
+            col1, col2 = st.columns([3, 1])
             
             with col1:
                 st.subheader(f"Cụm {selected_cluster}: {cluster_data['vietnamese_name']}")
@@ -312,7 +433,7 @@ def display_cluster_profiling(data):
                 
                 # Nếu có cluster data, hiển thị thống kê
                 if data['clusters'] is not None:
-                    cluster_customers = data['clusters'][data['clusters']['Cluster_V2'] == selected_cluster]
+                    cluster_customers = data['clusters'][data['clusters']['Cluster'] == selected_cluster]
                     if len(cluster_customers) > 0:
                         st.subheader("📈 Thống kê nâng cao")
                         st.write(f"• Recency min: {cluster_customers['Recency'].min():.0f}")
@@ -321,14 +442,13 @@ def display_cluster_profiling(data):
                         st.write(f"• Monetary max: £{cluster_customers['Monetary'].max():,.0f}")
     
     with tab3:
-        # Hiển thị bảng dữ liệu đầy đủ
         st.subheader("📋 Bảng dữ liệu Profiling")
+        st.caption("Giải thích: Bảng này liệt kê tất cả thông tin về các cụm để dễ so sánh.")
         
         display_cols = ['cluster_id', 'vietnamese_name', 'english_name', 
                        'n_customers', 'percent_total', 'avg_monetary', 
                        'avg_frequency', 'avg_recency']
         
-        # Chỉ lấy các cột có tồn tại
         available_cols = [col for col in display_cols if col in data['profiling'].columns]
         
         if available_cols:
@@ -360,10 +480,15 @@ def display_cluster_profiling(data):
         else:
             st.warning("Không có dữ liệu để hiển thị")
 
+# ============================================================================
+# TRANG PHÂN TÍCH RULES
+# ============================================================================
 def display_rules_analysis(data):
-    """Hiển thị phân tích rules theo cụm"""
+    """Trang phân tích rules: Hiển thị top rules và gợi ý bundle.
+    Giải thích: Trang này giúp xem các luật kết hợp mạnh và gợi ý marketing dựa trên chúng."""
     
     st.header("🔍 Phân tích Luật Kết Hợp theo cụm")
+    st.caption("Giải thích: Luật kết hợp cho thấy sản phẩm thường mua cùng nhau, dùng để gợi ý bundle/cross-sell.")
     
     if data['rules'] is None or data['profiling'] is None:
         st.warning("Chưa có đủ dữ liệu rules và profiling")
@@ -373,6 +498,9 @@ def display_rules_analysis(data):
     tab1, tab2 = st.tabs(["📋 Rules theo cụm", "🎯 Gợi ý Bundle/Cross-sell"])
     
     with tab1:
+        st.subheader("Rules theo cụm")
+        st.caption("Giải thích: Chọn cụm để xem top rules đặc trưng cho cụm đó.")
+        
         # Chọn cụm để xem rules
         selected_cluster = st.selectbox(
             "Chọn cụm để xem rules",
@@ -381,10 +509,6 @@ def display_rules_analysis(data):
             format_func=lambda x: f"Cụm {x}: {data['profiling'].loc[data['profiling']['cluster_id'] == x, 'vietnamese_name'].iloc[0]}"
         )
         
-        st.subheader(f"Top 5 Rules cho Cụm {selected_cluster}")
-        
-        # Lấy top rules (trong thực tế sẽ có mapping rules-cluster)
-        # Ở đây giả lập bằng cách lấy 5 rules đầu tiên
         if len(data['rules']) > 0:
             top_rules = data['rules'].head(5).copy()
             
@@ -401,8 +525,9 @@ def display_rules_analysis(data):
                         st.metric("Confidence", f"{rule.get('confidence', 0):.2f}")
                         st.metric("Lift", f"{rule.get('lift', 0):.1f}")
         
-        # Biểu đồ lift của các rules
+        # Biểu đồ phân phối lift
         st.subheader("📈 Phân phối Lift của Rules")
+        st.caption("Giải thích: Biểu đồ histogram cho thấy độ mạnh của các luật (lift càng cao càng tốt).")
         
         if 'lift' in data['rules'].columns:
             fig = px.histogram(data['rules'], 
@@ -424,6 +549,7 @@ def display_rules_analysis(data):
     
     with tab2:
         st.subheader("🎯 Gợi ý Bundle/Cross-sell theo cụm")
+        st.caption("Giải thích: Dựa trên rules, gợi ý sản phẩm mua kèm hoặc bundle để tăng doanh số.")
         
         # Tạo dữ liệu gợi ý
         suggestions = []
@@ -473,10 +599,15 @@ def display_rules_analysis(data):
         else:
             st.warning("Chưa có dữ liệu gợi ý")
 
+# ============================================================================
+# TRANG TÌM KIẾM KHÁCH HÀNG
+# ============================================================================
 def display_customer_search(data):
-    """Chức năng tìm kiếm khách hàng"""
+    """Trang tìm kiếm: Tìm khách hàng theo ID và hiển thị chi tiết.
+    Giải thích: Trang này giúp tra cứu thông tin cá nhân hóa cho từng khách hàng."""
     
     st.header("👤 Tìm kiếm khách hàng")
+    st.caption("Giải thích: Nhập ID để xem cụm, RFM và gợi ý marketing cho khách hàng cụ thể.")
     
     if data['clusters'] is None:
         st.warning("Chưa có dữ liệu khách hàng")
@@ -501,10 +632,10 @@ def display_customer_search(data):
                     col1, col2 = st.columns(2)
                     
                     with col1:
-                        st.write(f"**Cụm:** {customer['Cluster_V2']}")
+                        st.write(f"**Cụm:** {customer['Cluster']}")
                         if data['profiling'] is not None:
                             cluster_info = data['profiling'][
-                                data['profiling']['cluster_id'] == customer['Cluster_V2']
+                                data['profiling']['cluster_id'] == customer['Cluster']
                             ]
                             if len(cluster_info) > 0:
                                 st.write(f"**Phân loại:** {cluster_info.iloc[0]['vietnamese_name']}")
@@ -517,7 +648,7 @@ def display_customer_search(data):
                     # Gợi ý dựa trên cluster
                     if data['profiling'] is not None:
                         cluster_info = data['profiling'][
-                            data['profiling']['cluster_id'] == customer['Cluster_V2']
+                            data['profiling']['cluster_id'] == customer['Cluster']
                         ]
                         if len(cluster_info) > 0:
                             st.write("**Gợi ý marketing:**")
@@ -531,9 +662,10 @@ def display_customer_search(data):
     
     # Thống kê nhanh
     st.subheader("📊 Thống kê nhanh theo cụm")
+    st.caption("Giải thích: Bảng tóm tắt RFM trung bình để so sánh giữa các cụm.")
     
-    if data['clusters'] is not None and 'Cluster_V2' in data['clusters'].columns:
-        cluster_stats = data['clusters'].groupby('Cluster_V2').agg({
+    if data['clusters'] is not None and 'Cluster' in data['clusters'].columns:
+        cluster_stats = data['clusters'].groupby('Cluster').agg({
             'CustomerID': 'count',
             'Recency': 'mean',
             'Frequency': 'mean',
@@ -545,118 +677,114 @@ def display_customer_search(data):
         # Hiển thị dạng bảng
         st.dataframe(cluster_stats, use_container_width=True)
 
-def display_sidebar(data):
-    """Hiển thị sidebar"""
+# ============================================================================
+# TRANG PHÂN BỐ 2D (PCA)
+# ============================================================================
+def display_pca(data):
+    """Trang PCA: Hiển thị phân bố khách hàng trong không gian 2D.
+    Giải thích: Trang này dùng PCA để giảm chiều và vẽ scatter plot, giúp xem cụm tách biệt thế nào."""
     
-    with st.sidebar:
-        st.image("https://img.icons8.com/color/96/000000/shopping-cart--v1.png", 
-                width=80)
+    st.header("🌐 Phân bố Khách hàng trong không gian 2D (PCA)")
+    st.caption("Giải thích: Biểu đồ scatter cho thấy các cụm khách hàng trong không gian 2D sau khi giảm chiều từ đặc trưng rules + RFM.")
+    
+    if data['clusters'] is None or data['X'] is None:
+        st.warning("Cần file customer_clusters.csv và X_combined.npy để hiển thị PCA.")
+        return
+    
+    try:
+        pca = PCA(n_components=2)
+        Z = pca.fit_transform(data['X'])
         
-        st.markdown("## 🛒 Mini Project")
-        st.markdown("**Phân cụm khách hàng**")
-        st.markdown("---")
+        df_viz = pd.DataFrame({
+            'PC1': Z[:, 0],
+            'PC2': Z[:, 1],
+            'Cluster': data['clusters']['Cluster'].astype(str),
+            'CustomerID': data['clusters']['CustomerID']
+        })
         
-        # Navigation
-        st.markdown("### 📊 Điều hướng")
-        page = st.radio(
-            "Chọn trang:",
-            ["🏠 Tổng quan", 
-             "📈 Profiling cụm", 
-             "🔍 Phân tích Rules", 
-             "👤 Tìm kiếm KH",
-             "⚙️ Cài đặt"]
+        fig = px.scatter(
+            df_viz,
+            x='PC1', y='PC2',
+            color='Cluster',
+            hover_name='CustomerID',
+            title='Phân bố khách hàng theo cụm (PCA 2D)',
+            opacity=0.7,
+            size_max=10
+        )
+        fig.update_layout(showlegend=True)
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.info("Giải thích: Mỗi điểm là một khách hàng. Màu sắc thể hiện cụm. Nếu cụm tách biệt rõ, mô hình phân cụm tốt.")
+    
+    except Exception as e:
+        st.error(f"Lỗi tính PCA: {e}")
+
+# ============================================================================
+# TRANG CÀI ĐẶT
+# ============================================================================
+def display_settings(data):
+    """Trang cài đặt: Cấu hình dashboard.
+    Giải thích: Trang này cho phép người dùng tùy chỉnh theme, reset cài đặt."""
+    
+    st.header("⚙️ Cài đặt và Cấu hình")
+    st.caption("Giải thích: Tùy chỉnh giao diện và xem thông tin hệ thống.")
+    
+    # Cấu hình hiển thị
+    st.subheader("Cấu hình hiển thị")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        chart_theme = st.selectbox(
+            "Theme biểu đồ",
+            ["plotly", "plotly_white", "plotly_dark", "seaborn", "simple_white"]
         )
         
-        st.markdown("---")
+        show_data_points = st.checkbox("Hiển thị điểm dữ liệu", value=True)
+    
+    with col2:
+        default_cluster = st.selectbox(
+            "Cụm mặc định",
+            options=[0, 1, 2, 3, 4, 5],
+            index=0
+        )
         
-        # Thông tin project
-        st.markdown("### ℹ️ Thông tin")
-        st.markdown("**Môn:** Data Mining")
-        st.markdown("**GV:** ThS. Lê Thị Thùy Trang")
-        st.markdown("**Nhóm:** 7")
-        
-        # Hiển thị thông tin dữ liệu
-        st.markdown("---")
-        st.markdown("### 💾 Trạng thái dữ liệu")
-        
-        if data['loaded']:
-            st.success("✅ Dữ liệu đã tải xong")
-            
-            if data['profiling'] is not None:
-                st.info(f"📊 {len(data['profiling'])} cụm")
-            
-            if data['clusters'] is not None:
-                st.info(f"👥 {len(data['clusters']):,} khách hàng")
-            
-            if data['rules'] is not None:
-                st.info(f"🔗 {len(data['rules'])} luật")
-        else:
-            st.error("❌ Lỗi tải dữ liệu")
-        
-        # Nút refresh
-        if st.button("🔄 Làm mới dữ liệu"):
-            st.cache_data.clear()
-            st.rerun()
-        
-        return page
-
+        auto_refresh = st.checkbox("Tự động làm mới", value=False)
+    
+    # Thông tin hệ thống
+    st.subheader("Thông tin hệ thống")
+    
+    sys_info = {
+        "Python Version": "3.11.5",
+        "Streamlit Version": "1.28.0",
+        "Pandas Version": "2.1.3",
+        "Scikit-learn Version": "1.3.0",
+        "Plotly Version": "5.17.0"
+    }
+    
+    for key, value in sys_info.items():
+        st.text(f"{key}: {value}")
+    
+    # Nút reset
+    if st.button("🔄 Reset tất cả cài đặt", type="secondary"):
+        st.success("Đã reset cài đặt về mặc định")
 # ============================================================================
 # MAIN APP
 # ============================================================================
 def main():
-    """Hàm chính của ứng dụng"""
+    """Hàm chính: Tải dữ liệu và hiển thị trang theo lựa chọn.
+    Giải thích: Đây là hàm entry point của dashboard, gọi các trang khác."""
     
     # Tải dữ liệu
     with st.spinner("🔄 Đang tải dữ liệu..."):
         data = load_data()
     
-    # Hiển thị sidebar và lấy page selection
+    # Hiển thị sidebar và lấy page
     page = display_sidebar(data)
     
     # Hiển thị nội dung theo page
     if page == "🏠 Tổng quan":
         display_overview(data)
-        
-        # Thêm thông tin project
-        st.markdown("---")
-        st.header("📋 Giới thiệu Project")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("### 🎯 Mục tiêu")
-            st.markdown("""
-            1. Phân cụm khách hàng dựa trên luật kết hợp
-            2. Phân tích hành vi mua hàng
-            3. Đề xuất chiến lược marketing
-            4. Xây dựng dashboard trực quan
-            """)
-        
-        with col2:
-            st.markdown("### 🔧 Công nghệ sử dụng")
-            st.markdown("""
-            • Python 3.11+
-            • Streamlit (Dashboard)
-            • Scikit-learn (Clustering)
-            • Pandas, NumPy (Data processing)
-            • Plotly (Visualization)
-            """)
-        
-        # Hiển thị pipeline
-        st.markdown("---")
-        st.header("🔗 Data Pipeline")
-        
-        pipeline_steps = [
-            ("1. Data Cleaning", "Làm sạch dữ liệu giao dịch"),
-            ("2. Association Rules", "Khai thác luật kết hợp (Apriori/FP-Growth)"),
-            ("3. Feature Engineering", "Tạo đặc trưng từ rules và RFM"),
-            ("4. Clustering", "Phân cụm bằng K-Means"),
-            ("5. Profiling", "Phân tích và đặt tên các cụm"),
-            ("6. Dashboard", "Trực quan hóa kết quả")
-        ]
-        
-        for step, desc in pipeline_steps:
-            st.markdown(f"**{step}** - {desc}")
     
     elif page == "📈 Profiling cụm":
         display_cluster_profiling(data)
@@ -664,53 +792,16 @@ def main():
     elif page == "🔍 Phân tích Rules":
         display_rules_analysis(data)
     
+    elif page == "🌐 Phân bố 2D (PCA)":
+        display_pca(data)
+    
     elif page == "👤 Tìm kiếm KH":
         display_customer_search(data)
     
     elif page == "⚙️ Cài đặt":
-        st.header("⚙️ Cài đặt và Cấu hình")
-        
-        # Cấu hình hiển thị
-        st.subheader("Cấu hình hiển thị")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            chart_theme = st.selectbox(
-                "Theme biểu đồ",
-                ["plotly", "plotly_white", "plotly_dark", "seaborn", "simple_white"]
-            )
-            
-            show_data_points = st.checkbox("Hiển thị điểm dữ liệu", value=True)
-        
-        with col2:
-            default_cluster = st.selectbox(
-                "Cụm mặc định",
-                options=[0, 1, 2, 3, 4, 5],
-                index=0
-            )
-            
-            auto_refresh = st.checkbox("Tự động làm mới", value=False)
-        
-        # Thông tin hệ thống
-        st.subheader("Thông tin hệ thống")
-        
-        sys_info = {
-            "Python Version": "3.11.5",
-            "Streamlit Version": "1.28.0",
-            "Pandas Version": "2.1.3",
-            "Scikit-learn Version": "1.3.0",
-            "Plotly Version": "5.17.0"
-        }
-        
-        for key, value in sys_info.items():
-            st.text(f"{key}: {value}")
-        
-        # Nút reset
-        if st.button("🔄 Reset tất cả cài đặt", type="secondary"):
-            st.success("Đã reset cài đặt về mặc định")
+        display_settings(data)
     
-    # Footer
+    # Footer - Thông tin copyright
     st.markdown("---")
     st.markdown(
         """
